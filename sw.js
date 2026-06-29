@@ -15,7 +15,7 @@
    Sube CACHE_VERSION al desplegar cambios para invalidar el caché.
    ============================================================ */
 
-const CACHE_VERSION = 'earth-v1.4.0';
+const CACHE_VERSION = 'earth-v1.5.0';
 const ASSETS = [
   './',
   './index.html',
@@ -99,30 +99,50 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// --- Fetch: cache-first con respaldo a red. -------------------
+// --- Fetch ----------------------------------------------------
+// Estrategia equilibrada (offline real + auto-actualización):
+//   · Navegaciones → RED primero (así los cambios se ven al recargar);
+//     si no hay señal, cae al index.html cacheado.
+//   · Resto de assets → STALE-WHILE-REVALIDATE: responde al instante
+//     desde caché Y, en paralelo, baja la versión nueva y actualiza la
+//     caché para el próximo arranque. Nunca deja la app "atrapada" en
+//     una versión vieja, y sigue abriendo sin conexión.
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
-  // Navegaciones: caché primero (clave sin señal), luego red.
+  // Navegaciones: red primero, caché como respaldo offline.
   if (req.mode === 'navigate') {
     event.respondWith(
-      caches.match('./index.html').then((cached) =>
-        cached || fetch(req).catch(() => caches.match('./index.html')))
+      fetch(req)
+        .then((res) => {
+          // Refresca la copia de index.html para el modo offline.
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE_VERSION).then((c) => c.put('./index.html', copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match('./index.html').then((c) => c || caches.match('./')))
     );
     return;
   }
 
+  // Assets: stale-while-revalidate.
   event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req).then((res) => {
-        if (res && res.status === 200 && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
-        }
-        return res;
-      }).catch(() => cached); // sin red y sin caché: undefined (se maneja arriba)
-    })
+    caches.open(CACHE_VERSION).then((cache) =>
+      cache.match(req).then((cached) => {
+        const network = fetch(req)
+          .then((res) => {
+            if (res && res.status === 200 && res.type === 'basic') {
+              cache.put(req, res.clone());
+            }
+            return res;
+          })
+          .catch(() => cached); // sin red: usa lo cacheado
+        // Devuelve la caché de inmediato si existe; si no, espera a la red.
+        return cached || network;
+      })
+    )
   );
 });
