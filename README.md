@@ -18,6 +18,8 @@ Funciona **100 % offline** una vez cargada.
   débil** (gemido/quejido). Umbral de tonalidad ajustable en la UI.
 - **Seguidor de micro‑energía** con autocorrelación de la envolvente para
   detectar respiración periódica cerca del ruido de fondo.
+- **Modo Impactos**: opción que ensancha el filtro y acorta la ventana STA
+  para captar **golpes secos** (transitorios muy breves de banda ancha).
 - **Resiliencia**: watchdog del pipeline, auto‑reanudación del audio,
   reconexión del DJI, botón de **Reanudar** manual (iOS) y disponibilidad
   offline verificada antes de perder la señal.

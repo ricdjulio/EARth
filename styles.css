@@ -88,6 +88,22 @@ html, body {
 .device-hint { color: var(--text-dim); font-size: 14px; margin-top: 28px; line-height: 1.4; }
 .start-error { color: var(--red); font-weight: 700; margin-top: 16px; }
 
+/* Aviso de descargo de responsabilidad en la pantalla de inicio. */
+.disclaimer {
+  margin: 20px auto 0; max-width: 440px; text-align: left;
+  font-size: 13px; line-height: 1.45; color: var(--text);
+  background: rgba(255, 59, 48, .10);
+  border: 1px solid var(--red); border-radius: 10px;
+  padding: 12px 14px;
+}
+.disclaimer strong { color: var(--red); }
+
+/* Nota mínima persistente en la pantalla operativa. */
+.disclaimer-mini {
+  margin: 6px 4px 0; text-align: center;
+  font-size: 11px; color: var(--text-dim); line-height: 1.3;
+}
+
 /* Estado de disponibilidad sin conexión (pantalla de arranque). */
 .offline-status {
   display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
@@ -207,6 +223,9 @@ html, body {
   padding: 10px 12px; min-height: 46px;
 }
 .toggle input { width: 22px; height: 22px; accent-color: var(--green); }
+/* Toggle destacado (Modo Impactos): ocupa toda la fila y usa acento rojo. */
+.toggle--accent { grid-column: 1 / -1; border-color: var(--red); }
+.toggle--accent input { accent-color: var(--red); }
 
 .slider-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 12px; }
 .slider-row label { grid-column: 1 / -1; font-size: 13px; color: var(--text-dim); font-weight: 700; }

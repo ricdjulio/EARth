@@ -42,6 +42,15 @@
       </div>
       <button id="recache-btn" class="recache-btn" hidden>Descargar para uso sin conexión</button>
       <p id="start-error" class="start-error" role="alert" hidden></p>
+
+      <!-- Aviso de descargo de responsabilidad. Herramienta de asistencia. -->
+      <p class="disclaimer" role="note">
+        <strong>⚠ Aviso:</strong> herramienta de asistencia. Las detecciones
+        <strong>no son prueba definitiva</strong> de vida y pueden incluir falsos
+        positivos o negativos. Toda señal debe confirmarse con
+        <strong>equipo profesional certificado</strong> (geófonos, cámaras
+        térmicas) y personal de rescate cualificado.
+      </p>
     </div>
   </main>
 
@@ -126,6 +135,13 @@
           <input type="checkbox" id="wake-toggle" checked />
           <span>Mantener pantalla</span>
         </label>
+        <!-- Modo Impactos: optimiza la detección de golpes secos (transitorios
+             muy breves de banda ancha) ensanchando el filtro y acortando la
+             ventana STA. -->
+        <label class="toggle toggle--accent">
+          <input type="checkbox" id="impacts-toggle" />
+          <span>Modo Impactos (golpes secos)</span>
+        </label>
       </div>
 
       <div class="slider-row">
@@ -150,6 +166,7 @@
       <span><i class="sw sw-weak"></i> Vocalización débil</span>
       <span><i class="sw sw-breath"></i> Respiración</span>
     </footer>
+    <p class="disclaimer-mini">No es prueba definitiva · confirmar siempre con equipo profesional</p>
 
     <!-- ============ OVERLAY DE REANUDAR AUDIO ============ -->
     <!-- Aparece solo si el audio quedó suspendido y el reintento automático

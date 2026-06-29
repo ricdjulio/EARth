@@ -37,6 +37,7 @@ const els = {
   bandpassToggle: $('bandpass-toggle'),
   hapticToggle: $('haptic-toggle'),
   wakeToggle: $('wake-toggle'),
+  impactsToggle: $('impacts-toggle'),
   sensitivity: $('sensitivity'),
   sensitivityVal: $('sensitivity-val'),
   tonality: $('tonality'),
@@ -94,6 +95,12 @@ const state = {
 const BAND_LOW = 80;
 const BAND_HIGH = 2500;
 const FFT_MAX_HZ = 2800; // tope visible del espectrograma
+
+// Modo Impactos: ensancha el pasa-bajos para preservar el transitorio de un
+// golpe seco (banda ancha) y acorta la STA para captar el clic brevísimo.
+const IMPACT_LP_HZ = 6000;   // pasa-bajos ampliado en modo impactos
+const STA_TAU_NORMAL = 0.040;
+const STA_TAU_IMPACT = 0.010;
 
 // ===============================================================
 // ARRANQUE
@@ -254,6 +261,7 @@ function buildGraph() {
 
   applyChannelMode();
   applyBandpass();
+  applyImpactsMode();
 }
 
 // ===============================================================
@@ -655,6 +663,23 @@ function applyBandpass() {
   if (on) applyChannelMode();
 }
 
+els.impactsToggle.addEventListener('change', applyImpactsMode);
+function applyImpactsMode() {
+  const on = els.impactsToggle.checked;
+  // (1) Ensancha el pasa-bajos para no "comerse" el transitorio del golpe.
+  if (state.nodes.chain) {
+    state.nodes.chain.forEach((f) => {
+      f.lp.frequency.value = on ? IMPACT_LP_HZ : BAND_HIGH;
+    });
+  }
+  // (2) Acorta la STA en el worklet para captar el clic brevísimo.
+  if (state.worklet) {
+    state.worklet.port.postMessage({ staTau: on ? STA_TAU_IMPACT : STA_TAU_NORMAL });
+  }
+  // (3) Aviso visual del estado (solo en ejecución).
+  if (state.running) setStatus(true, on ? 'Escuchando · Impactos' : 'Escuchando');
+}
+
 els.monitorToggle.addEventListener('change', () => {
   if (state.nodes.monitorGain)
     state.nodes.monitorGain.gain.value = els.monitorToggle.checked ? 1 : 0;
@@ -996,6 +1021,7 @@ function saveSettings() {
       bandpass: els.bandpassToggle.checked,
       haptic: els.hapticToggle.checked,
       wake: els.wakeToggle.checked,
+      impacts: els.impactsToggle.checked,
     }));
   } catch (e) {}
 }
@@ -1015,6 +1041,7 @@ function restoreSettings() {
   if (typeof s.bandpass === 'boolean') els.bandpassToggle.checked = s.bandpass;
   if (typeof s.haptic === 'boolean') els.hapticToggle.checked = s.haptic;
   if (typeof s.wake === 'boolean') els.wakeToggle.checked = s.wake;
+  if (typeof s.impacts === 'boolean') els.impactsToggle.checked = s.impacts;
   if (s.channelMode) {
     state.channelMode = s.channelMode;
     document.querySelectorAll('.seg-btn').forEach((b) => {
@@ -1024,7 +1051,7 @@ function restoreSettings() {
 }
 // Guarda ante cualquier cambio de control.
 ['change', 'input'].forEach((ev) =>
-  document.querySelectorAll('.seg-btn, #monitor-toggle, #bandpass-toggle, #haptic-toggle, #wake-toggle, #sensitivity, #tonality')
+  document.querySelectorAll('.seg-btn, #monitor-toggle, #bandpass-toggle, #haptic-toggle, #wake-toggle, #impacts-toggle, #sensitivity, #tonality')
     .forEach((el) => el.addEventListener(ev, saveSettings)));
 restoreSettings();
 
