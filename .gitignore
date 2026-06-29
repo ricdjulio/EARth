@@ -1,0 +1,10 @@
+# Sistema / editores
+.DS_Store
+Thumbs.db
+*.log
+
+# Dependencias (este proyecto es estático, sin build)
+node_modules/
+
+# Carpeta de configuración local de herramientas
+.claude/

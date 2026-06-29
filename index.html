@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <!-- viewport-fit=cover: usa toda la pantalla en dispositivos con notch (iPhone). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <meta name="color-scheme" content="dark" />
+  <title>EARth · Detector de Señales de Vida</title>
+
+  <!-- PWA / iOS: permite "Añadir a pantalla de inicio" como app a pantalla completa. -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="EARth" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" href="icon-192.png" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ================= PANTALLA DE ARRANQUE ================= -->
+  <!-- Botón gigante necesario para "desbloquear" el AudioContext en móvil
+       (los navegadores exigen un gesto del usuario para iniciar audio). -->
+  <main id="start-screen" class="screen">
+    <div class="start-inner">
+      <h1 class="logo">EAR<span>th</span></h1>
+      <p class="tagline">Detector acústico de señales de vida bajo escombros</p>
+      <button id="start-btn" class="start-btn" aria-label="Empezar a escuchar">
+        <span class="start-btn__icon" aria-hidden="true">▶</span>
+        <span class="start-btn__label">EMPEZAR A<br>ESCUCHAR</span>
+      </button>
+      <p id="device-hint" class="device-hint">
+        Conecta el receptor DJI Mic / DJI Mic 2 por USB-C o Lightning y usa auriculares.
+      </p>
+      <!-- Estado de disponibilidad sin conexión: confirma que la app ya está
+           cacheada y funcionará aunque se pierda la señal celular. -->
+      <div id="offline-status" class="offline-status checking">
+        <span class="os-icon">⏳</span>
+        <span class="os-text">Comprobando disponibilidad sin conexión…</span>
+      </div>
+      <button id="recache-btn" class="recache-btn" hidden>Descargar para uso sin conexión</button>
+      <p id="start-error" class="start-error" role="alert" hidden></p>
+    </div>
+  </main>
+
+  <!-- ================= PANTALLA OPERATIVA ================= -->
+  <main id="app-screen" class="screen" hidden>
+    <!-- Banda de alerta que destella al cruzar el umbral STA/LTA. -->
+    <div id="alert-flash" class="alert-flash" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="status">
+        <span id="status-dot" class="status-dot"></span>
+        <span id="status-text">Escuchando</span>
+        <!-- Píldora de red: informa, pero recuerda que la app no depende de ella. -->
+        <span id="net-pill" class="net-pill" title="La app funciona sin conexión">SIN RED · OK</span>
+      </div>
+      <div class="topbar-right">
+        <span id="device-label" class="device-label">—</span>
+        <button id="history-btn" class="icon-btn hist-btn" title="Historial de detecciones">
+          <span aria-hidden="true">≣</span>
+          <span id="history-count" class="hist-count" hidden>0</span>
+        </button>
+        <button id="stop-btn" class="icon-btn" title="Detener">■</button>
+      </div>
+    </header>
+
+    <!-- Medidores de volumen L/R con retención de pico (peak-hold). -->
+    <section class="meters" aria-label="Niveles de entrada">
+      <div class="meter">
+        <div class="meter-head"><span>L · Mic 1</span><span id="db-l" class="db">-∞</span></div>
+        <div class="meter-bar"><div id="bar-l" class="meter-fill"></div><div id="peak-l" class="meter-peak"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-head"><span>R · Mic 2</span><span id="db-r" class="db">-∞</span></div>
+        <div class="meter-bar"><div id="bar-r" class="meter-fill"></div><div id="peak-r" class="meter-peak"></div></div>
+      </div>
+    </section>
+
+    <!-- Espectrograma en cascada (waterfall) vertical. -->
+    <section class="spectro-wrap" aria-label="Espectrograma">
+      <canvas id="spectrogram"></canvas>
+      <div class="spectro-axis">
+        <span>2.5k</span><span>1k</span><span>500</span><span>250</span><span>80&nbsp;Hz</span>
+      </div>
+      <!-- Indicadores de detección sobre el espectrograma. -->
+      <div id="detect-badges" class="detect-badges"></div>
+    </section>
+
+    <!-- Lectura de eventos de detección. -->
+    <section class="readout">
+      <div class="readout-cell">
+        <span class="readout-label">STA/LTA</span>
+        <span id="ratio-val" class="readout-val">0.0</span>
+      </div>
+      <div class="readout-cell">
+        <span class="readout-label">Última detección</span>
+        <span id="last-event" class="readout-val small">—</span>
+      </div>
+    </section>
+
+    <!-- Controles: canales, monitor, sensibilidad. -->
+    <section class="controls">
+      <div class="seg" role="group" aria-label="Selección de canal">
+        <button class="seg-btn active" data-ch="stereo">Estéreo</button>
+        <button class="seg-btn" data-ch="left">Solo L</button>
+        <button class="seg-btn" data-ch="right">Solo R</button>
+      </div>
+
+      <div class="toggles">
+        <label class="toggle">
+          <input type="checkbox" id="monitor-toggle" checked />
+          <span>Monitor (auriculares)</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="bandpass-toggle" checked />
+          <span>Filtro 80–2500 Hz</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="haptic-toggle" checked />
+          <span>Vibración</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="wake-toggle" checked />
+          <span>Mantener pantalla</span>
+        </label>
+      </div>
+
+      <div class="slider-row">
+        <label for="sensitivity">Sensibilidad de detección (STA/LTA)</label>
+        <input type="range" id="sensitivity" min="1.8" max="8" step="0.1" value="3.5" />
+        <span id="sensitivity-val" class="slider-val">3.5×</span>
+      </div>
+
+      <!-- Umbral de tonalidad: cuán "armónica" debe ser una señal para
+           contar como voz. Más bajo = capta vocalizaciones débiles
+           (más sensible, más falsos positivos). -->
+      <div class="slider-row">
+        <label for="tonality">Tonalidad mínima para voz</label>
+        <input type="range" id="tonality" min="0.20" max="0.80" step="0.01" value="0.42" />
+        <span id="tonality-val" class="slider-val">0.42</span>
+      </div>
+    </section>
+
+    <footer class="legend">
+      <span><i class="sw sw-bang"></i> Golpe / impacto</span>
+      <span><i class="sw sw-voice"></i> Voz / grito / ladrido</span>
+      <span><i class="sw sw-weak"></i> Vocalización débil</span>
+      <span><i class="sw sw-breath"></i> Respiración</span>
+    </footer>
+
+    <!-- ============ OVERLAY DE REANUDAR AUDIO ============ -->
+    <!-- Aparece solo si el audio quedó suspendido y el reintento automático
+         falló (típico en iOS tras una interrupción larga: requiere un gesto
+         del usuario para reanudar el AudioContext). -->
+    <div id="resume-overlay" class="resume-overlay" hidden role="alertdialog"
+         aria-label="Audio en pausa">
+      <div class="resume-inner">
+        <span class="resume-icon" aria-hidden="true">⏸</span>
+        <h2>Audio en pausa</h2>
+        <p>El sistema suspendió la captación. Toca para reanudar la escucha.</p>
+        <button id="resume-btn" class="resume-btn">REANUDAR ESCUCHA</button>
+      </div>
+    </div>
+
+    <!-- ============ PANEL DE HISTORIAL (overlay deslizable) ============ -->
+    <!-- Registro persistente de detecciones para triangular la fuente y
+         traspasar el hallazgo a otro equipo. Se guarda en localStorage. -->
+    <div id="history-panel" class="history-panel" hidden role="dialog" aria-label="Historial de detecciones">
+      <div class="hp-header">
+        <h2>Historial</h2>
+        <button id="history-close" class="icon-btn" title="Cerrar">✕</button>
+      </div>
+
+      <!-- Contadores por tipo de la sesión. -->
+      <div class="hp-counts">
+        <div class="hp-count"><i class="sw sw-bang"></i><span id="cnt-bang">0</span><small>golpes</small></div>
+        <div class="hp-count"><i class="sw sw-voice"></i><span id="cnt-voice">0</span><small>voces</small></div>
+        <div class="hp-count"><i class="sw sw-weak"></i><span id="cnt-weak">0</span><small>débiles</small></div>
+        <div class="hp-count"><i class="sw sw-breath"></i><span id="cnt-breath">0</span><small>resp.</small></div>
+      </div>
+
+      <!-- Lista de eventos (más reciente arriba). -->
+      <ul id="history-list" class="hp-list" aria-live="polite"></ul>
+      <p id="history-empty" class="hp-empty">Sin detecciones registradas todavía.</p>
+
+      <div class="hp-actions">
+        <button id="history-export" class="hp-btn">⬇ Exportar CSV</button>
+        <button id="history-clear" class="hp-btn danger">🗑 Borrar</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Módulo principal (ES module). -->
+  <script src="app.js" type="module"></script>
+</body>
+</html>
