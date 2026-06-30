@@ -110,10 +110,12 @@ story.append(ul([
 # --- 2. Requisitos ---------------------------------------------
 story.append(Paragraph("2 · Requisitos", h2))
 story.append(ul([
-    "iPhone/iPad con sensor <b>LiDAR</b>: iPhone 12 Pro / Pro Max y posteriores "
-    "(modelos «Pro»), o iPad Pro (2020 en adelante).",
-    "App <b>Scaniverse</b> (gratuita) instalada — enlace disponible en la pantalla de EARth.",
-    "Foco o linterna: el LiDAR mide en oscuridad, pero el color y la textura necesitan luz.",
+    "<b>iOS (recomendado):</b> iPhone/iPad Pro con sensor <b>LiDAR</b> (iPhone 12 Pro y "
+    "posteriores «Pro»; iPad Pro 2020 en adelante). Mide incluso en oscuridad.",
+    "<b>Android:</b> teléfono compatible con Scaniverse; escanea por <b>fotogrametría</b>, "
+    "así que necesita buena iluminación y más solape entre pasadas.",
+    "App <b>Scaniverse</b> (gratuita) instalada — enlaces (iOS / Android) en la pantalla de EARth.",
+    "Foco o linterna: imprescindible para color y textura (en oscuridad total Android no escanea bien).",
     "Recomendado: pértiga / monopié para acercar el dispositivo a los huecos sin exponerse.",
 ]))
 
@@ -130,12 +132,13 @@ story.append(Spacer(1, 6))
 story.append(Paragraph("4 · Cómo escanear (paso a paso)", h2))
 story.append(ol([
     "Abre Scaniverse y pulsa el botón rojo <b>«New Scan»</b>.",
-    "Elige el modo <b>«LiDAR»</b> (rango medio) para espacios y huecos; usa "
-    "<b>«Small Object»</b> solo para detalle muy cercano.",
+    "Elige el modo de <b>escaneo de área</b> (<b>«Área» / «Area»</b>): es el más adecuado "
+    "para mapear el espacio completo y los huecos entre escombros (no «Small Object», "
+    "que es solo para objetos pequeños).",
     "Apunta a la superficie y <b>muévete despacio</b>, manteniendo entre <b>0,5 y 3 m</b> de distancia.",
     "Cubre con pasadas <b>solapadas</b>: paredes, techo, suelo, aberturas y el interior de los huecos.",
     "Las zonas capturadas se «pintan» en pantalla; rellena los parches que queden sin cubrir.",
-    "Pulsa <b>«Done»</b> y luego <b>«Process»</b> para generar el modelo 3D.",
+    "Pulsa <b>«Done»</b> y luego <b>«Process»</b> para generar el modelo 3D del área.",
 ]))
 
 # --- 5. Buenas prácticas ---------------------------------------
