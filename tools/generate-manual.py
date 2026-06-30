@@ -132,9 +132,10 @@ story.append(Spacer(1, 6))
 story.append(Paragraph("4 · Cómo escanear (paso a paso)", h2))
 story.append(ol([
     "Abre Scaniverse y pulsa el botón rojo <b>«New Scan»</b>.",
-    "Elige el modo de <b>escaneo de área</b> (<b>«Área» / «Area»</b>): es el más adecuado "
-    "para mapear el espacio completo y los huecos entre escombros (no «Small Object», "
-    "que es solo para objetos pequeños).",
+    "Elige el <b>tipo</b> de escaneo: <b>«Mesh»</b> (malla). Permite medir distancias y es "
+    "el adecuado para rescate; evita «Splat», pensado solo para visualización.",
+    "Elige la <b>dimensión</b> y pulsa <b>«Large Object / Area»</b>: cubre toda la zona y los "
+    "huecos entre escombros (no «Small Object», que es solo para objetos pequeños).",
     "Apunta a la superficie y <b>muévete despacio</b>, manteniendo entre <b>0,5 y 3 m</b> de distancia.",
     "Cubre con pasadas <b>solapadas</b>: paredes, techo, suelo, aberturas y el interior de los huecos.",
     "Las zonas capturadas se «pintan» en pantalla; rellena los parches que queden sin cubrir.",
