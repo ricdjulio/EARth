@@ -1,0 +1,5 @@
+# Trata estos formatos como binarios: sin conversión de fin de línea (CRLF/LF)
+# ni diffs de texto. Evita que Git corrompa el PDF y los iconos PNG en Windows.
+*.pdf binary
+*.png binary
+*.ico binary

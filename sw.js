@@ -15,7 +15,7 @@
    Sube CACHE_VERSION al desplegar cambios para invalidar el caché.
    ============================================================ */
 
-const CACHE_VERSION = 'earth-v1.6.0';
+const CACHE_VERSION = 'earth-v1.7.0';
 const ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const ASSETS = [
   './app.js',
   './worklet.js',
   './manifest.json',
+  './manual-scaniverse.pdf',
   './icon-192.png',
   './icon-512.png',
   './icon-512-maskable.png',
