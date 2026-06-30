@@ -16,7 +16,7 @@
    Sube CACHE_VERSION al desplegar cambios para invalidar el caché.
    ============================================================ */
 
-const CACHE_VERSION = 'earth-v1.11.0';
+const CACHE_VERSION = 'earth-v1.12.0';
 const ASSETS = [
   './',
   './index.html',

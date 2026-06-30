@@ -984,6 +984,20 @@ function showOfflineStatus(ready, unknown) {
 // SERVICE WORKER (offline)
 // ===============================================================
 if ('serviceWorker' in navigator) {
+  // Cuando un Service Worker NUEVO toma el control, recarga UNA vez para que
+  // el HTML, el CSS y el JS provengan todos de la misma versión (evita ver,
+  // p. ej., el texto nuevo sin sus estilos por servir CSS viejo en caché).
+  // No recargamos si hay una sesión de escucha activa (no interrumpir audio).
+  let swRefreshing = false;
+  // ¿Ya había un SW controlando? Si no, el primer 'controllerchange' es la
+  // instalación inicial (no hay que recargar). Solo recargamos en ACTUALIZACIONES.
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (swRefreshing || !hadController || state.running) return;
+    swRefreshing = true;
+    location.reload();
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
       .then(() => {
