@@ -10,12 +10,13 @@
       para que la UI avise "listo para usar sin conexión".
    3) Permite "rellenar" el caché ('recache') cuando vuelve la señal
       un instante, sin recargar la app.
-   4) Sirve siempre desde caché primero; la red es solo un extra.
+   4) Navegación con red-primero y assets con stale-while-revalidate:
+      offline real + auto-actualización (ver el handler de fetch).
 
    Sube CACHE_VERSION al desplegar cambios para invalidar el caché.
    ============================================================ */
 
-const CACHE_VERSION = 'earth-v1.10.0';
+const CACHE_VERSION = 'earth-v1.11.0';
 const ASSETS = [
   './',
   './index.html',

@@ -47,6 +47,24 @@ html, body {
 /* ===================== PANTALLA DE ARRANQUE ===================== */
 #start-screen { justify-content: center; align-items: center; text-align: center; }
 .start-inner { width: 100%; max-width: 440px; }
+
+/* Homenaje (colores de la bandera de Venezuela: amarillo, azul, rojo). */
+.memorial { margin: 0 auto 22px; }
+.memorial-text {
+  margin: 0; font-size: clamp(22px, 7vw, 30px); font-weight: 900;
+  letter-spacing: .5px; line-height: 1.1;
+}
+.memorial-text .m-todos { color: #ffd21e; } /* amarillo */
+.memorial-text .m-somos { color: #4aa3ff; } /* azul */
+.memorial-text .m-uno   { color: #ff3b30; } /* rojo */
+.memorial-stars {
+  margin: 6px 0 0; color: #ffffff; font-size: 14px; letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(255, 255, 255, .35);
+}
+.memorial-sub {
+  margin: 4px 0 0; font-size: 11px; color: var(--text-dim);
+  letter-spacing: .5px;
+}
 .logo {
   font-size: clamp(48px, 16vw, 96px);
   font-weight: 900;
